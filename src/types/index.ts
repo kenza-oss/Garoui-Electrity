@@ -78,3 +78,44 @@ export interface JobOffer {
   createdAt: string;
   isActive: boolean;
 }
+
+export interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  profession: string;
+  experience: number;
+  subscriptionStatus: 'free' | 'premium' | 'expired';
+  subscriptionEndDate?: string;
+  createdAt: string;
+}
+
+export interface SubscriptionPlan {
+  id: string;
+  name: string;
+  price: number;
+  duration: number; // en mois
+  features: string[];
+  isPopular?: boolean;
+}
+
+export interface PaymentMethod {
+  id: string;
+  type: 'card' | 'bank_transfer' | 'mobile_money';
+  last4?: string;
+  brand?: string;
+  isDefault: boolean;
+}
+
+export interface Payment {
+  id: string;
+  userId: string;
+  planId: string;
+  amount: number;
+  status: 'pending' | 'completed' | 'failed';
+  paymentMethod: string;
+  createdAt: string;
+  transactionId?: string;
+}

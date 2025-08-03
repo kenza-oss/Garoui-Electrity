@@ -1,58 +1,43 @@
-import React from 'react';
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { Header } from './components/layout/Header';
 import { Footer } from './components/layout/Footer';
 import { HomePage } from './components/sections/HomePage';
 import { RecruitmentPage } from './components/sections/RecruitmentPage';
+import { SubscriptionPage } from './components/sections/SubscriptionPage';
 import { SubcontractingPage } from './components/sections/SubcontractingPage';
 import { ServicesPage } from './components/sections/ServicesPage';
 import { MaterialPage } from './components/sections/MaterialPage';
 import { ContactPage } from './components/sections/ContactPage';
-// TODO: import PartnerPage, ContactPage quand créés
-
-const navToSection: Record<string, string> = {
-  '/': 'accueil',
-  '/recrutement': 'recrutement',
-  '/sous-traitance': 'sous-traitance',
-  '/services': 'services',
-  '/materiel': 'materiel',
-  '/partenaires': 'partenaires',
-  '/contact': 'contact',
-};
 
 function App() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const activeSection = navToSection[location.pathname] || 'accueil';
-  const [isMobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [activeSection, setActiveSection] = useState('accueil');
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleNavigate = (section: string) => {
     setMobileMenuOpen(false);
-    if (section.startsWith('/')) {
-      navigate(section);
-      return;
-    }
-    switch (section) {
+    setActiveSection(section);
+  };
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'accueil':
+        return <HomePage onNavigate={handleNavigate} />;
       case 'recrutement':
-        navigate('/recrutement');
-        break;
+        return <RecruitmentPage onNavigate={handleNavigate} />;
+      case 'subscription':
+        return <SubscriptionPage onNavigate={handleNavigate} />;
       case 'sous-traitance':
-        navigate('/sous-traitance');
-        break;
+        return <SubcontractingPage onNavigate={handleNavigate} />;
       case 'services':
-        navigate('/services');
-        break;
+        return <ServicesPage onNavigate={handleNavigate} />;
       case 'materiel':
-        navigate('/materiel');
-        break;
+        return <MaterialPage onNavigate={handleNavigate} />;
       case 'partenaires':
-        navigate('/partenaires');
-        break;
+        return <SubcontractingPage onNavigate={handleNavigate} showPartnersDefault={true} />;
       case 'contact':
-        navigate('/contact');
-        break;
+        return <ContactPage />;
       default:
-        navigate('/');
+        return <HomePage onNavigate={handleNavigate} />;
     }
   };
 
@@ -65,19 +50,9 @@ function App() {
         onToggleMobileMenu={() => setMobileMenuOpen((v) => !v)}
       />
       <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<HomePage onNavigate={handleNavigate} />} />
-          <Route path="/recrutement" element={<RecruitmentPage onNavigate={handleNavigate} />} />
-          <Route path="/sous-traitance" element={<SubcontractingPage onNavigate={handleNavigate} />} />
-          <Route path="/services" element={<ServicesPage onNavigate={handleNavigate} />} />
-          <Route path="/materiel" element={<MaterialPage onNavigate={handleNavigate} />} />
-          <Route path="/partenaires" element={<SubcontractingPage onNavigate={handleNavigate} showPartnersDefault={true} />} />
-          <Route path="/contact" element={<ContactPage />} />
-          {/* <Route path="/contact" element={<ContactPage onNavigate={handleNavigate} />} /> */}
-          {/* Ajoutez d'autres routes ici */}
-        </Routes>
+        {renderSection()}
       </main>
-      <Footer />
+      <Footer onNavigate={handleNavigate} />
     </div>
   );
 }

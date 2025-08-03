@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { Upload, FileText, Eye, Download, Trash2, Search, Filter, Plus, Briefcase, Calendar, MapPin, Users, Lock } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Upload, FileText, Eye, Download, Trash2, Search, Filter, Plus, Briefcase, Calendar, MapPin, Users, Lock, Crown, AlertCircle } from 'lucide-react';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import { Select } from '../common/Select';
 import { Card } from '../common/Card';
-import { Candidate, JobOffer } from '../../types';
+import { Candidate, JobOffer, User } from '../../types';
+import { JobOffersSection } from './JobOffersSection';
 
 interface RecruitmentPageProps {
   onNavigate: (section: string) => void;
@@ -19,6 +20,8 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
   const [adminPassword, setAdminPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [step, setStep] = useState(1);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [showSubscriptionRequired, setShowSubscriptionRequired] = useState(false);
   const [candidateData, setCandidateData] = useState({
     firstName: '',
     lastName: '',
@@ -261,6 +264,34 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
       case 'apprentissage': return 'Apprentissage';
       default: return type;
     }
+  };
+
+  // Vérifier l'authentification et l'abonnement
+  useEffect(() => {
+    const savedUser = localStorage.getItem('garoui-user');
+    if (savedUser) {
+      const user = JSON.parse(savedUser);
+      setCurrentUser(user);
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const checkSubscriptionAccess = () => {
+    if (!currentUser) {
+      setShowSubscriptionRequired(true);
+      return false;
+    }
+    
+    if (currentUser.subscriptionStatus === 'free') {
+      setShowSubscriptionRequired(true);
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleNavigateToSubscription = () => {
+    onNavigate('subscription');
   };
 
   // Fonctions d'authentification admin
@@ -534,56 +565,76 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
     );
   }
 
+  // Modal d'abonnement requis
+  if (showSubscriptionRequired) {
+    return (
+      <div className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-primary to-accent">
+        <div className="max-w-md w-full bg-white rounded-xl shadow-2xl p-8 text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center mx-auto mb-6">
+            <Crown className="w-10 h-10 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-primary mb-4">Abonnement Requis</h1>
+          <p className="text-slate-600 mb-6">
+            Pour accéder aux offres d'emploi et postuler aux missions, vous devez souscrire à un abonnement premium.
+          </p>
+          <div className="bg-slate-50 rounded-lg p-4 mb-6">
+            <h3 className="font-semibold text-slate-900 mb-2">Fonctionnalités Premium :</h3>
+            <ul className="text-sm text-slate-600 space-y-1">
+              <li>• Postuler aux offres d'emploi</li>
+              <li>• Accès complet aux missions</li>
+              <li>• Notifications en temps réel</li>
+              <li>• Support prioritaire</li>
+              <li>• Profil mis en avant</li>
+            </ul>
+          </div>
+          <div className="flex gap-3">
+            <Button onClick={handleNavigateToSubscription} variant="accent" className="flex-1">
+              Voir les abonnements
+            </Button>
+            <Button onClick={() => setShowSubscriptionRequired(false)} variant="outline">
+              Retour
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-2xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div
+    className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center"
+    style={{ backgroundImage: "url('recrutement.jpg')" }}
+  >
+    <div className="max-w-2xl w-full bg-white/80 rounded-xl shadow-lg p-8">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-3xl font-bold text-primary mb-2">Rejoignez Garoui Électricité</h1>
           <p className="text-slate-700">Déposez votre candidature pour un poste ou un stage. Nous recrutons des techniciens, ingénieurs, stagiaires, etc. Toutes les candidatures sont étudiées avec attention.</p>
         </div>
-        <Button onClick={handleAdminButtonClick} variant="outline" className="flex items-center gap-2">
-          <Lock className="w-4 h-4" />
-          Admin RH
-        </Button>
+        <div className="flex gap-2">
+          {currentUser && (
+            <div className="text-right mr-4">
+              <div className="text-sm text-slate-600">Connecté : {currentUser.firstName}</div>
+              <div className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                currentUser.subscriptionStatus === 'premium' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+              }`}>
+                {currentUser.subscriptionStatus === 'premium' ? 'Premium' : 'Gratuit'}
+              </div>
+            </div>
+          )}
+          <Button onClick={handleAdminButtonClick} variant="outline" className="flex items-center gap-2">
+            <Lock className="w-4 h-4" />
+            Admin RH
+          </Button>
+        </div>
       </div>
 
       {/* Offres d'emploi actives */}
-      {jobOffers.filter(offer => offer.isActive).length > 0 && (
-        <div className="mb-12">
-          <h2 className="text-2xl font-bold text-primary mb-6">Offres d'emploi disponibles</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {jobOffers.filter(offer => offer.isActive).map((offer) => (
-              <Card key={offer.id} className="p-8 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 flex flex-col bg-gradient-to-br from-white to-slate-50 border border-slate-200 hover:border-primary/20 group">
-                <div className="flex flex-col items-center text-center mb-6">
-                  <div className="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                    <Users className="w-10 h-10 text-white" />
-                  </div>
-                  <h3 className="font-bold text-primary text-xl mb-3 group-hover:text-accent transition-colors">{offer.title}</h3>
-                </div>
-                <p className="text-sm text-slate-600 mb-6 flex-1 leading-relaxed">{offer.description}</p>
-                <div className="space-y-3 text-sm text-slate-600">
-                  <div className="flex items-center justify-center gap-2 p-3 bg-white rounded-lg shadow-sm border border-slate-100 group-hover:border-primary/20 transition-colors">
-                    <Briefcase className="w-5 h-5 text-primary" />
-                    <span className="font-medium">{getContractTypeLabel(offer.contractType)}</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2 p-3 bg-white rounded-lg shadow-sm border border-slate-100 group-hover:border-primary/20 transition-colors">
-                    <Users className="w-5 h-5 text-primary" />
-                    <span className="font-medium">{offer.experienceRequired === 0 ? 'Débutant' : `${offer.experienceRequired} ans d'expérience`}</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2 p-3 bg-white rounded-lg shadow-sm border border-slate-100 group-hover:border-primary/20 transition-colors">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    <span className="font-medium">{offer.wilaya}</span>
-                  </div>
-                  <div className="flex items-center justify-center gap-2 text-xs text-slate-500 pt-3 border-t border-slate-200">
-                    <Calendar className="w-4 h-4" />
-                    Publié le {new Date(offer.createdAt).toLocaleDateString('fr-FR')}
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
+      <JobOffersSection 
+        jobOffers={jobOffers}
+        currentUser={currentUser}
+        onNavigateToSubscription={handleNavigateToSubscription}
+      />
 
       <div className="mb-8">
         <div className="flex justify-between mb-2 text-sm font-medium text-slate-700">
@@ -595,27 +646,50 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
           <div className="bg-accent h-2 rounded-full transition-all duration-300" style={{ width: `${(step / 3) * 100}%` }}></div>
         </div>
       </div>
-      <form onSubmit={handleMultiStepSubmit} className="space-y-6" encType="multipart/form-data">
-        {step === 1 && (
-          <div className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <Input label="Nom" value={candidateData.lastName} onChange={v => setCandidateData(d => ({...d, lastName: v}))} required />
-              <Input label="Prénom" value={candidateData.firstName} onChange={v => setCandidateData(d => ({...d, firstName: v}))} required />
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <Input label="Email" type="email" value={candidateData.email} onChange={v => setCandidateData(d => ({...d, email: v}))} required />
-              <Input label="Téléphone" type="tel" value={candidateData.phone} onChange={v => setCandidateData(d => ({...d, phone: v}))} required />
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <Select label="Années d'expérience" value={candidateData.experience} onChange={v => setCandidateData(d => ({...d, experience: v}))} options={Array.from({length: 41}, (_, i) => ({value: i.toString(), label: i === 0 ? 'Débutant' : i + ' ans'}))} required />
-              <Input label="Poste souhaité" value={candidateData.position} onChange={v => setCandidateData(d => ({...d, position: v}))} required />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Motivation <span className="text-red-500">*</span></label>
-              <textarea value={candidateData.motivation} onChange={e => setCandidateData(d => ({...d, motivation: e.target.value}))} rows={4} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-colors" required placeholder="Expliquez pourquoi vous souhaitez rejoindre Garoui..." />
-            </div>
+      {!isAuthenticated ? (
+        <div className="text-center py-8">
+          <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle className="w-8 h-8 text-white" />
           </div>
-        )}
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">Connexion Requise</h2>
+          <p className="text-slate-600 mb-6">Vous devez vous connecter pour accéder aux fonctionnalités de recrutement.</p>
+          <Button onClick={handleNavigateToSubscription} variant="accent">
+            Se connecter / S'inscrire
+          </Button>
+        </div>
+      ) : currentUser?.subscriptionStatus === 'free' ? (
+        <div className="text-center py-8">
+          <div className="w-16 h-16 bg-gradient-to-br from-accent to-primary rounded-full flex items-center justify-center mx-auto mb-4">
+            <Crown className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">Abonnement Premium Requis</h2>
+          <p className="text-slate-600 mb-6">Pour postuler aux offres d'emploi, vous devez souscrire à un abonnement premium.</p>
+          <Button onClick={handleNavigateToSubscription} variant="accent">
+            Voir les abonnements
+          </Button>
+        </div>
+      ) : (
+        <form onSubmit={handleMultiStepSubmit} className="space-y-6" encType="multipart/form-data">
+          {step === 1 && (
+            <div className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <Input label="Nom" value={candidateData.lastName} onChange={v => setCandidateData(d => ({...d, lastName: v}))} required />
+                <Input label="Prénom" value={candidateData.firstName} onChange={v => setCandidateData(d => ({...d, firstName: v}))} required />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Input label="Email" type="email" value={candidateData.email} onChange={v => setCandidateData(d => ({...d, email: v}))} required />
+                <Input label="Téléphone" type="tel" value={candidateData.phone} onChange={v => setCandidateData(d => ({...d, phone: v}))} required />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <Select label="Années d'expérience" value={candidateData.experience} onChange={v => setCandidateData(d => ({...d, experience: v}))} options={Array.from({length: 41}, (_, i) => ({value: i.toString(), label: i === 0 ? 'Débutant' : i + ' ans'}))} required />
+                <Input label="Poste souhaité" value={candidateData.position} onChange={v => setCandidateData(d => ({...d, position: v}))} required />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Motivation <span className="text-red-500">*</span></label>
+                <textarea value={candidateData.motivation} onChange={e => setCandidateData(d => ({...d, motivation: e.target.value}))} rows={4} className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-accent focus:border-transparent transition-colors" required placeholder="Expliquez pourquoi vous souhaitez rejoindre Garoui..." />
+              </div>
+            </div>
+          )}
         {step === 2 && (
           <div className="space-y-4">
             <div>
@@ -668,6 +742,7 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
           </Button>
         </div>
       </form>
+      )}
 
       {/* Modal de connexion admin */}
       {showLoginModal && (
@@ -725,6 +800,7 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
           </div>
         </div>
       )}
+       </div>
     </div>
   );
 };

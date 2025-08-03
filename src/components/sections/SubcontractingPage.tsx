@@ -5,7 +5,7 @@ import { Input } from '../common/Input';
 import { Select } from '../common/Select';
 import { Card } from '../common/Card';
 import { Partner } from '../../types';
-import { useNavigate, useLocation } from 'react-router-dom';
+
 
 interface SubcontractingPageProps {
   onNavigate: (section: string) => void;
@@ -13,8 +13,6 @@ interface SubcontractingPageProps {
 }
 
 export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNavigate, showPartnersDefault }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const [showPartners, setShowPartners] = useState(showPartnersDefault ?? false);
   const [step, setStep] = useState(1);
   const [partnerData, setPartnerData] = useState({
@@ -257,18 +255,13 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
     }
   };
 
-  // Synchronise showPartners avec l'URL
-  React.useEffect(() => {
-    if (location.pathname === '/partenaires') {
-      setShowPartners(true);
-    } else if (location.pathname === '/sous-traitance') {
-      setShowPartners(false);
-    }
-  }, [location.pathname]);
+
 
   if (showPartners) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <div className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center"
+    style={{ backgroundImage: "url('partenaire.jpg')" }} >
+    <div className="max-w-2xl w-full bg-white/80 rounded-xl shadow-lg p-8">
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
@@ -326,13 +319,16 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
             </Card>
           ))}
         </div>
-      </div>
+       </div>
+       </div>
     );
   }
 
   if (!showPartners) {
     return (
-      <div className="max-w-2xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center"
+    style={{ backgroundImage: "url('sous-traitance.jpg')" }} >
+    <div className="max-w-2xl w-full bg-white/80 rounded-xl shadow-lg p-8">
         <h1 className="text-3xl font-bold text-primary mb-2">Devenir partenaire Garoui</h1>
         <p className="mb-8 text-slate-700">Inscrivez votre entreprise pour rejoindre notre réseau de sous-traitants qualifiés. Nous collaborons sur des projets Sonelgaz dans toute l"Algérie.</p>
         <div className="mb-8">
@@ -420,6 +416,7 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
             </Button>
           </div>
         </form>
+      </div>
       </div>
     );
   }

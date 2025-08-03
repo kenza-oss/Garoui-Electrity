@@ -1,8 +1,11 @@
 import React from 'react';
 import { Zap, Mail, Phone, MapPin, Facebook, Twitter, Linkedin } from 'lucide-react';
-import { Link } from 'react-router-dom';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onNavigate?: (section: string) => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   return (
     <footer className="bg-primary text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -27,7 +30,7 @@ export const Footer: React.FC = () => {
             <div className="space-y-2 text-sm text-white/80">
               <div className="flex items-center space-x-2">
                 <Phone className="w-4 h-4" />
-                <span>+33 1 23 45 67 89</span>
+                <span>+213 213 213</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Mail className="w-4 h-4" />
@@ -44,11 +47,11 @@ export const Footer: React.FC = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Liens utiles</h3>
             <div className="space-y-2 text-sm text-white/80">
-              <Link to="/services" className="block hover:text-accent transition-colors">Nos services</Link>
-              <Link to="/materiel" className="block hover:text-accent transition-colors">Catalogue produits</Link>
-              <Link to="/sous-traitance" className="block hover:text-accent transition-colors">Devenir partenaire</Link>
-              <Link to="/recrutement" className="block hover:text-accent transition-colors">Carrières</Link>
-              <Link to="/contact" className="block hover:text-accent transition-colors">Support client</Link>
+              <button onClick={() => onNavigate?.('services')} className="block hover:text-accent transition-colors text-left w-full">Nos services</button>
+              <button onClick={() => onNavigate?.('materiel')} className="block hover:text-accent transition-colors text-left w-full">Catalogue produits</button>
+              <button onClick={() => onNavigate?.('sous-traitance')} className="block hover:text-accent transition-colors text-left w-full">Devenir partenaire</button>
+              <button onClick={() => onNavigate?.('recrutement')} className="block hover:text-accent transition-colors text-left w-full">Carrières</button>
+              <button onClick={() => onNavigate?.('contact')} className="block hover:text-accent transition-colors text-left w-full">Support client</button>
             </div>
           </div>
 

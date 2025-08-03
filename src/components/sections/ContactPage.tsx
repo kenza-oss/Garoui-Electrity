@@ -19,7 +19,11 @@ export const ContactPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+    <div
+    className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center"
+    style={{ backgroundImage: "url('contacter.jpg')" }}
+  >
+    <div className="max-w-2xl w-full bg-white/80 rounded-xl shadow-lg p-8">
       <h1 className="text-3xl font-bold text-primary mb-2">Contactez Garoui Électricité</h1>
       <p className="mb-8 text-slate-700">Une question, un projet ? Notre équipe vous répond rapidement.</p>
       <Card className="p-8 mb-8">
@@ -48,6 +52,7 @@ export const ContactPage: React.FC = () => {
           <MapPin className="w-5 h-5" /> 123 Rue de l'Électricité, Alger, Algérie
         </div>
       </Card>
+    </div>
     </div>
   );
 }; 
