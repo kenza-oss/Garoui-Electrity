@@ -227,7 +227,7 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 **Garoui Électricité**
 - 📧 Email : contact@garoui-electricite.fr
 - 🌐 Site : [garoui-electricite.fr](https://garoui-electricite.fr)
-- 📍 Localisation : France
+- 📍 Localisation : Algerie
 
 ## 🙏 Remerciements
 
