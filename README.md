@@ -242,3 +242,4 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 <div align="center">
   <strong>⚡ Développé avec passion pour Garoui Électricité ⚡</strong>
 </div> "# Garoui-Electrity" 
+"# Garoui-Electrity" 
