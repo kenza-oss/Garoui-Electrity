@@ -43,13 +43,13 @@ export const ContactPage: React.FC = () => {
       </Card>
       <Card className="p-6 flex flex-col gap-4">
         <div className="flex items-center gap-2 text-slate-700">
-          <Mail className="w-5 h-5" /> contact@garoui-electricite.fr
+          <Mail className="w-5 h-5" /> garoui.electricity@gmail.com
         </div>
         <div className="flex items-center gap-2 text-slate-700">
-          <Phone className="w-5 h-5" /> +213 23 45 67 89
+          <Phone className="w-5 h-5" /> +213 540 83 63 21
         </div>
         <div className="flex items-center gap-2 text-slate-700">
-          <MapPin className="w-5 h-5" /> 123 Rue de l'Électricité, Alger, Algérie
+          <MapPin className="w-5 h-5" /> Tizi ghennif, Tizi Ouzou, Algérie
         </div>
       </Card>
     </div>
