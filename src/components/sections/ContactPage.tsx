@@ -21,7 +21,7 @@ export const ContactPage: React.FC = () => {
   return (
     <div
     className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center"
-    style={{ backgroundImage: "url('contacter.jpg')" }}
+    style={{ backgroundImage: "url('/contacter.jpg')" }}
   >
     <div className="max-w-2xl w-full bg-white/80 rounded-xl shadow-lg p-8">
       <h1 className="text-3xl font-bold text-primary mb-2">Contactez Garoui Électricité</h1>

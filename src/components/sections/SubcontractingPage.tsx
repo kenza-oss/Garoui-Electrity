@@ -43,7 +43,7 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
       location: 'Alger',
       status: 'approved',
       documents: { kbis: 'available', insurance: 'available' },
-      logoUrl: 'mono.png',
+      logoUrl: '/mono.png',
       secteur: 'Appareillage & LED',
       wilaya: 'Alger',
       description: 'Fabricant d\'appareillage électrique et solutions LED pour le résidentiel et le tertiaire.',
@@ -59,7 +59,7 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
       location: 'Oran',
       status: 'approved',
       documents: { kbis: 'available', insurance: 'available' },
-      logoUrl: 'bms.jpg',
+      logoUrl: '/bms.jpg',
       secteur: 'Appareillage & accessoires',
       wilaya: 'Oran',
       description: 'Distributeur d\'appareillage, accessoires et solutions électriques pour professionnels.',
@@ -75,7 +75,7 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
       location: 'Blida',
       status: 'approved',
       documents: { kbis: 'available', insurance: 'available' },
-      logoUrl: 'sonalgaz.png',
+      logoUrl: '/sonalgaz.png',
       secteur: 'Équipements énergétiques',
       wilaya: 'Blida',
       description: 'Filiale Sonelgaz spécialisée dans les équipements et solutions énergétiques.',
@@ -91,7 +91,7 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
       location: 'Alger',
       status: 'approved',
       documents: { kbis: 'available', insurance: 'available' },
-      logoUrl: 'schneider.jpg',
+      logoUrl: '/schneider.jpg',
       secteur: 'Automatisme & distribution',
       wilaya: 'Alger',
       description: 'Leader mondial des solutions d\'automatisme et de distribution électrique.',
@@ -107,7 +107,7 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
       location: 'Constantine',
       status: 'approved',
       documents: { kbis: 'available', insurance: 'available' },
-      logoUrl: 'legrand.png',
+      logoUrl: '/legrand.png',
       secteur: 'Appareillage & tableaux',
       wilaya: 'Constantine',
       description: 'Solutions globales pour l\'appareillage, la gestion et la distribution électrique.',
@@ -260,7 +260,7 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
   if (showPartners) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center"
-    style={{ backgroundImage: "url('partenaire.jpg')" }} >
+    style={{ backgroundImage: "url('/partenaire.jpg')" }} >
     <div className="max-w-2xl w-full bg-white/80 rounded-xl shadow-lg p-8">
         {/* Header */}
         <div className="flex justify-between items-center">
@@ -327,7 +327,7 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
   if (!showPartners) {
     return (
       <div className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center"
-    style={{ backgroundImage: "url('sous-traitance.jpg')" }} >
+    style={{ backgroundImage: "url('/sous-traitance.jpg')" }} >
     <div className="max-w-2xl w-full bg-white/80 rounded-xl shadow-lg p-8">
         <h1 className="text-3xl font-bold text-primary mb-2">Devenir partenaire Garoui</h1>
         <p className="mb-8 text-slate-700">Inscrivez votre entreprise pour rejoindre notre réseau de sous-traitants qualifiés. Nous collaborons sur des projets Sonelgaz dans toute l"Algérie.</p>

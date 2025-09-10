@@ -610,7 +610,7 @@ export const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ onNavigate }
                   <div className="bg-slate-50 p-4 rounded-lg">
                     <div className="text-sm text-slate-700 space-y-2">
                       <div><strong>Banque :</strong> CPA</div>
-                      <div><strong>RIB :</strong> 4100231142-69 </div>
+                      <div><strong>RIB :</strong> 4100231142-69</div>
                       <div><strong>Bénéficiaire :</strong> GAROUÏ ÉLECTRICITÉ</div>
                       <div><strong>Montant :</strong> {selectedPlan.price.toLocaleString()} DA</div>
                     </div>
