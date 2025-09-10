@@ -38,7 +38,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       <div className="relative min-h-screen flex flex-col">
         {/* Fond image sombre + overlay arrondi bleu nuit */}
         <div className="absolute inset-0 w-full h-full">
-          <img src="bg.jpg" alt="hero-bg" className="w-full h-full object-cover object-center brightness-50" />
+          <img src="/bg.jpg" alt="hero-bg" className="w-full h-full object-cover object-center brightness-50" />
           <svg className="absolute top-0 right-0 h-full w-2/3 md:w-1/2" viewBox="0 0 800 800" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M800 0V800H0C200 600 600 200 800 0Z" fill="#002B45" />
           </svg>

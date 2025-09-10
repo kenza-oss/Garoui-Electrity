@@ -638,7 +638,7 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
   return (
     <div
     className="min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center"
-    style={{ backgroundImage: "url('recrutement.jpg')" }}
+    style={{ backgroundImage: "url('/recrutement.jpg')" }}
   >
     <div className="max-w-2xl w-full bg-white/80 rounded-xl shadow-lg p-8">
       <div className="flex justify-between items-center mb-8">
