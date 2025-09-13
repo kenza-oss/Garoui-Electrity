@@ -7,4 +7,14 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
+  // Dev proxy to bypass CORS in browser during development
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://87.98.160.37:3001',
+        changeOrigin: true,
+        // keep /api prefix so requests map 1:1
+      },
+    },
+  },
 });

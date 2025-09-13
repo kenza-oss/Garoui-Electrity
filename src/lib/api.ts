@@ -29,7 +29,8 @@ async function request<T>(path: string, options: { method?: HttpMethod; body?: a
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers: {
-      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
+      // Only set Content-Type when sending a non-FormData body
+      ...(!isFormData && body ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers,
     },
