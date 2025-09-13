@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
-import { Mail, Phone, MapPin } from 'lucide-react';
+import Mail from 'lucide-react/dist/esm/icons/mail';
+import Phone from 'lucide-react/dist/esm/icons/phone';
+import MapPin from 'lucide-react/dist/esm/icons/map-pin';
 
 export const ContactPage: React.FC = () => {
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });

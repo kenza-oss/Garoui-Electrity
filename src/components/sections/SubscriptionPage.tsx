@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Check, Shield, Users, Calendar, Star, Lock, Eye, EyeOff, CreditCard as CreditCardIcon, Building2, Smartphone } from 'lucide-react';
+import CreditCard from 'lucide-react/dist/esm/icons/credit-card';
+import Check from 'lucide-react/dist/esm/icons/check';
+import Shield from 'lucide-react/dist/esm/icons/shield';
+import Users from 'lucide-react/dist/esm/icons/users';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import Star from 'lucide-react/dist/esm/icons/star';
+import Lock from 'lucide-react/dist/esm/icons/lock';
+import Eye from 'lucide-react/dist/esm/icons/eye';
+import EyeOff from 'lucide-react/dist/esm/icons/eye-off';
+import CreditCardIcon from 'lucide-react/dist/esm/icons/credit-card';
+import Building2 from 'lucide-react/dist/esm/icons/building-2';
+import Smartphone from 'lucide-react/dist/esm/icons/smartphone';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import { Select } from '../common/Select';

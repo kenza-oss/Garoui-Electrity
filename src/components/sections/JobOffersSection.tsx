@@ -1,5 +1,10 @@
 import React from 'react';
-import { Briefcase, Calendar, MapPin, Users, Lock, Crown } from 'lucide-react';
+import Briefcase from 'lucide-react/dist/esm/icons/briefcase';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import MapPin from 'lucide-react/dist/esm/icons/map-pin';
+import Users from 'lucide-react/dist/esm/icons/users';
+import Lock from 'lucide-react/dist/esm/icons/lock';
+import Crown from 'lucide-react/dist/esm/icons/crown';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
 import { JobOffer, User } from '../../types';

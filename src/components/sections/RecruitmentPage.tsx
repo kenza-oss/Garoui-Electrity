@@ -1,5 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, FileText, Eye, Download, Trash2, Search, Filter, Plus, Briefcase, Calendar, MapPin, Users, Lock, Crown, AlertCircle } from 'lucide-react';
+import Upload from 'lucide-react/dist/esm/icons/upload';
+import FileText from 'lucide-react/dist/esm/icons/file-text';
+import Eye from 'lucide-react/dist/esm/icons/eye';
+import Download from 'lucide-react/dist/esm/icons/download';
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
+import Search from 'lucide-react/dist/esm/icons/search';
+import Filter from 'lucide-react/dist/esm/icons/filter';
+import Plus from 'lucide-react/dist/esm/icons/plus';
+import Briefcase from 'lucide-react/dist/esm/icons/briefcase';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import MapPin from 'lucide-react/dist/esm/icons/map-pin';
+import Users from 'lucide-react/dist/esm/icons/users';
+import Lock from 'lucide-react/dist/esm/icons/lock';
+import Crown from 'lucide-react/dist/esm/icons/crown';
+import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import { Select } from '../common/Select';
@@ -56,38 +70,7 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
   const [jobOffers, setJobOffers] = useState<JobOffer[]>([]);
 
   // Mock data for company job offers
-  const [companyJobOffers] = useState<CompanyJobOffer[]>([
-    {
-      id: '1',
-      companyId: '1',
-      companyName: 'Entreprise Électrique Plus',
-      title: 'Électricien Industriel',
-      description: 'Nous recherchons un électricien expérimenté pour nos projets industriels. Missions : installation électrique, maintenance préventive, diagnostic et réparation.',
-      requirements: ['Bac+2 en électricité', '5 ans d\'expérience', 'Permis de conduire'],
-      contractType: 'cdi',
-      experienceRequired: 5,
-      wilaya: 'Alger',
-      salary: { min: 80000, max: 120000, currency: 'DZD' },
-      isActive: true,
-      createdAt: '2024-01-20',
-      applications: []
-    },
-    {
-      id: '2',
-      companyId: '2',
-      companyName: 'Électro Solutions',
-      title: 'Technicien Maintenance',
-      description: 'Poste de technicien maintenance électrique pour nos installations commerciales. Responsable de la maintenance préventive et curative.',
-      requirements: ['Bac en électricité', '3 ans d\'expérience', 'Autonome'],
-      contractType: 'cdd',
-      experienceRequired: 3,
-      wilaya: 'Oran',
-      salary: { min: 60000, max: 90000, currency: 'DZD' },
-      isActive: true,
-      createdAt: '2024-01-18',
-      applications: []
-    }
-  ]);
+  const [companyJobOffers, setCompanyJobOffers] = useState<CompanyJobOffer[]>([]);
 
   // Mock data for demonstration
   const candidates: Candidate[] = [
@@ -309,6 +292,7 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
         const list = await api.listOffers();
         const normalized = Array.isArray(list) ? list : (list?.items || []);
         setJobOffers(normalized as JobOffer[]);
+        setCompanyJobOffers(normalized as unknown as CompanyJobOffer[]);
       } catch {
         // Keep empty or fallback silently
       }

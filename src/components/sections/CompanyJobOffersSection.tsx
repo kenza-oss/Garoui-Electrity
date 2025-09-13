@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
-import { 
-  Building2, 
-  Briefcase, 
-  Calendar, 
-  MapPin, 
-  Users, 
-  Eye, 
-  Mail, 
-  Phone,
-  Lock,
-  Crown
-} from 'lucide-react';
+import Building2 from 'lucide-react/dist/esm/icons/building-2';
+import Briefcase from 'lucide-react/dist/esm/icons/briefcase';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import MapPin from 'lucide-react/dist/esm/icons/map-pin';
+import Users from 'lucide-react/dist/esm/icons/users';
+import Eye from 'lucide-react/dist/esm/icons/eye';
+import Mail from 'lucide-react/dist/esm/icons/mail';
+import Phone from 'lucide-react/dist/esm/icons/phone';
+import Lock from 'lucide-react/dist/esm/icons/lock';
+import Crown from 'lucide-react/dist/esm/icons/crown';
 import { CompanyJobOffer, User } from '../../types';
 
 interface CompanyJobOffersSectionProps {

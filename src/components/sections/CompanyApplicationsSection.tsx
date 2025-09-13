@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
 import { Card } from '../common/Card';
 import { Button } from '../common/Button';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  Download, 
-  Eye, 
-  CheckCircle, 
-  XCircle, 
-  Clock,
-  FileText,
-  MapPin
-} from 'lucide-react';
+import User from 'lucide-react/dist/esm/icons/user';
+import Mail from 'lucide-react/dist/esm/icons/mail';
+import Phone from 'lucide-react/dist/esm/icons/phone';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import Download from 'lucide-react/dist/esm/icons/download';
+import Eye from 'lucide-react/dist/esm/icons/eye';
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
+import XCircle from 'lucide-react/dist/esm/icons/x-circle';
+import Clock from 'lucide-react/dist/esm/icons/clock';
+import FileText from 'lucide-react/dist/esm/icons/file-text';
+import MapPin from 'lucide-react/dist/esm/icons/map-pin';
 import { CompanyJobApplication, CompanyJobOffer } from '../../types';
 
 interface CompanyApplicationsSectionProps {

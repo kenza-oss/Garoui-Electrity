@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
-import { Zap, Home, Building, Lightbulb, Wrench, Shield, ArrowRight, X, ChevronRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import Zap from 'lucide-react/dist/esm/icons/zap';
+import Home from 'lucide-react/dist/esm/icons/home';
+import Building from 'lucide-react/dist/esm/icons/building';
+import Lightbulb from 'lucide-react/dist/esm/icons/lightbulb';
+import Wrench from 'lucide-react/dist/esm/icons/wrench';
+import Shield from 'lucide-react/dist/esm/icons/shield';
+import ArrowRight from 'lucide-react/dist/esm/icons/arrow-right';
+import X from 'lucide-react/dist/esm/icons/x';
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import { Select } from '../common/Select';
 import { Card } from '../common/Card';
 import { Service, QuoteRequest } from '../../types';
+import { api } from '../../lib/api';
 import { motion } from 'framer-motion';
 
 interface ServicesPageProps {
@@ -27,89 +36,33 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
     budget: '',
   });
 
-  const services: Service[] = [
-    {
-      id: '1',
-      title: 'Branchement simple',
-      description: 'Raccordement électrique pour habitations individuelles ou petits locaux.',
-      icon: 'Zap',
-      category: 'branchement',
-    },
-    {
-      id: '2',
-      title: 'Branchement complexe',
-      description: 'Raccordement pour immeubles, sites industriels, ou besoins spécifiques.',
-      icon: 'Building',
-      category: 'branchement',
-    },
-    {
-      id: '3',
-      title: 'Coupure & rétablissement',
-      description: "Intervention rapide pour coupure ou rétablissement d'alimentation.",
-      icon: 'Shield',
-      category: 'intervention',
-    },
-    {
-      id: '4',
-      title: 'Pose / dépose compteur',
-      description: 'Installation ou retrait de compteurs électriques toutes puissances.',
-      icon: 'Home',
-      category: 'compteur',
-    },
-    {
-      id: '5',
-      title: 'Travaux HT/BT',
-      description: 'Réalisation de travaux haute et basse tension pour hôtels, universités, hôpitaux, stades, etc.',
-      icon: 'Wrench',
-      category: 'htbt',
-    },
-    {
-      id: '6',
-      title: 'Éclairage public',
-      description: "Installation et maintenance d'éclairage public et de sécurité.",
-      icon: 'Lightbulb',
-      category: 'eclairage',
-    },
-    {
-      id: '7',
-      title: 'Maintenance & dépannage',
-      description: "Service d'urgence et maintenance préventive pour tous types de sites.",
-      icon: 'Wrench',
-      category: 'maintenance',
-    },
-    {
-      id: '8',
-      title: 'Bâtiment, maison',
-      description: 'Solutions électriques pour bâtiments résidentiels, tertiaires et industriels.',
-      icon: 'Home',
-      category: 'batiment',
-    },
-  ];
+  const [services, setServices] = useState<Service[]>([]);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const list = await api.listServices();
+        setServices(Array.isArray(list) ? list : (list?.items || []));
+      } catch {
+        setServices([]);
+      }
+    };
+    load();
+  }, []);
 
-  // Mock quote requests for dashboard
-  const quoteRequests: QuoteRequest[] = [
-    {
-      id: '1',
-      clientName: 'Restaurant Le Gourmet',
-      email: 'contact@legourmet.fr',
-      phone: '01 23 45 67 89',
-      company: 'SARL Le Gourmet',
-      serviceType: 'Installation électrique commerciale',
-      description: 'Rénovation complète du système électrique',
-      status: 'en_cours',
-      createdAt: '2024-01-15'
-    },
-    {
-      id: '2',
-      clientName: 'Marie Dubois',
-      email: 'marie.dubois@email.com',
-      phone: '06 12 34 56 78',
-      serviceType: 'Éclairage professionnel',
-      description: 'Installation LED pour maison 120m²',
-      status: 'envoye',
-      createdAt: '2024-01-12'
-    }
-  ];
+  const [quoteRequests, setQuoteRequests] = useState<QuoteRequest[]>([]);
+  const token = typeof window !== 'undefined' ? localStorage.getItem('garoui_token') : null;
+  useEffect(() => {
+    const loadMyDevis = async () => {
+      if (!token) return;
+      try {
+        const list = await api.myDevis();
+        setQuoteRequests(Array.isArray(list) ? list : (list?.items || []));
+      } catch {
+        setQuoteRequests([]);
+      }
+    };
+    if (showDashboard) loadMyDevis();
+  }, [showDashboard, token]);
 
   const serviceTypes = [
     { value: '', label: 'Sélectionnez un service' },
@@ -150,15 +103,29 @@ export const ServicesPage: React.FC<ServicesPageProps> = ({ onNavigate }) => {
     setShowQuoteModal(true);
   };
 
-  const handleQuoteSubmit = (e: React.FormEvent) => {
+  const handleQuoteSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (quoteStep < 3) {
       setQuoteStep(quoteStep + 1);
     } else {
-      console.log('Quote request submitted:', quoteData);
-      setShowQuoteModal(false);
-      setQuoteStep(1);
-      // Reset form or show success message
+      try {
+        await api.createDevis({
+          clientName: quoteData.clientName,
+          email: quoteData.email,
+          phone: quoteData.phone,
+          company: quoteData.company,
+          serviceType: quoteData.serviceType,
+          description: quoteData.projectDescription,
+          timeline: quoteData.timeline,
+          budget: quoteData.budget,
+        });
+        setShowQuoteModal(false);
+        setQuoteStep(1);
+        setQuoteData({ clientName: '', email: '', phone: '', company: '', serviceType: '', projectDescription: '', timeline: '', budget: '' });
+        alert('Demande de devis envoyée !');
+      } catch (err) {
+        alert((err as Error).message || 'Erreur lors de la demande de devis');
+      }
     }
   };
 

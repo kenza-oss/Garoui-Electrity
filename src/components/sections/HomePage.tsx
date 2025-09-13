@@ -1,5 +1,9 @@
 import React from 'react';
-import { Users, Award, CheckCircle, Building2, Zap } from 'lucide-react';
+import Users from 'lucide-react/dist/esm/icons/users';
+import Award from 'lucide-react/dist/esm/icons/award';
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
+import Building2 from 'lucide-react/dist/esm/icons/building-2';
+import Zap from 'lucide-react/dist/esm/icons/zap';
 import { motion } from 'framer-motion';
 
 interface HomePageProps {

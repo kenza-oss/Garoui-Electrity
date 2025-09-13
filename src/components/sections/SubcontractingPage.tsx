@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { Building, MapPin, Search, Filter, CheckCircle, Clock, XCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import Building from 'lucide-react/dist/esm/icons/building';
+import MapPin from 'lucide-react/dist/esm/icons/map-pin';
+import Search from 'lucide-react/dist/esm/icons/search';
+import Filter from 'lucide-react/dist/esm/icons/filter';
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
+import Clock from 'lucide-react/dist/esm/icons/clock';
+import XCircle from 'lucide-react/dist/esm/icons/x-circle';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import { Select } from '../common/Select';
 import { Card } from '../common/Card';
 import { Partner } from '../../types';
+import { api } from '../../lib/api';
 
 
 interface SubcontractingPageProps {
@@ -30,90 +37,26 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
   const [uploadError, setUploadError] = useState('');
   const maxFileSize = 10 * 1024 * 1024; // 10 Mo
   const [searchTerm, setSearchTerm] = useState('');
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [loadingPartners, setLoadingPartners] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
-  // Nouvelle liste de partenaires avec logos, secteur, wilaya, description, site
-  const partners: Partner[] = [
-    {
-      id: '1',
-      companyName: 'Mono Electric',
-      contactName: 'Service Commercial',
-      email: 'contact@monoelectric.com',
-      phone: '+213 21 00 00 01',
-      expertise: ['Appareillage', 'LED'],
-      location: 'Alger',
-      status: 'approved',
-      documents: { kbis: 'available', insurance: 'available' },
-      logoUrl: '/mono.png',
-      secteur: 'Appareillage & LED',
-      wilaya: 'Alger',
-      description: 'Fabricant d\'appareillage électrique et solutions LED pour le résidentiel et le tertiaire.',
-      site: 'https://monoelectric.com',
-    },
-    {
-      id: '2',
-      companyName: 'BMS Electric SARL',
-      contactName: 'Service Client',
-      email: 'contact@bms-electric.com',
-      phone: '+213 21 00 00 02',
-      expertise: ['Appareillage', 'Accessoires'],
-      location: 'Oran',
-      status: 'approved',
-      documents: { kbis: 'available', insurance: 'available' },
-      logoUrl: '/bms.jpg',
-      secteur: 'Appareillage & accessoires',
-      wilaya: 'Oran',
-      description: 'Distributeur d\'appareillage, accessoires et solutions électriques pour professionnels.',
-      site: 'https://bms-electric.com',
-    },
-    {
-      id: '3',
-      companyName: 'SAIEG (Sonelgaz)',
-      contactName: 'Direction',
-      email: 'contact@saieg.dz',
-      phone: '+213 21 00 00 03',
-      expertise: ['Équipements énergétiques'],
-      location: 'Blida',
-      status: 'approved',
-      documents: { kbis: 'available', insurance: 'available' },
-      logoUrl: '/sonalgaz.png',
-      secteur: 'Équipements énergétiques',
-      wilaya: 'Blida',
-      description: 'Filiale Sonelgaz spécialisée dans les équipements et solutions énergétiques.',
-      site: 'https://fr.wikipedia.org/wiki/SAIEG',
-    },
-    {
-      id: '4',
-      companyName: 'Schneider Electric Algérie',
-      contactName: 'Service Pro',
-      email: 'contact@schneider-electric.dz',
-      phone: '+213 21 00 00 04',
-      expertise: ['Automatisme', 'Distribution'],
-      location: 'Alger',
-      status: 'approved',
-      documents: { kbis: 'available', insurance: 'available' },
-      logoUrl: '/schneider.jpg',
-      secteur: 'Automatisme & distribution',
-      wilaya: 'Alger',
-      description: 'Leader mondial des solutions d\'automatisme et de distribution électrique.',
-      site: 'https://www.se.com/dz/fr/',
-    },
-    {
-      id: '5',
-      companyName: 'Legrand Algérie',
-      contactName: 'Support',
-      email: 'contact@legrand.dz',
-      phone: '+213 21 00 00 05',
-      expertise: ['Appareillage', 'Tableaux'],
-      location: 'Constantine',
-      status: 'approved',
-      documents: { kbis: 'available', insurance: 'available' },
-      logoUrl: '/legrand.png',
-      secteur: 'Appareillage & tableaux',
-      wilaya: 'Constantine',
-      description: 'Solutions globales pour l\'appareillage, la gestion et la distribution électrique.',
-      site: 'https://www.legrand.com',
-    },
-  ];
+  useEffect(() => {
+    const load = async () => {
+      setLoadingPartners(true);
+      try {
+        const list = await api.listPartners();
+        setPartners(Array.isArray(list) ? list : (list?.items || []));
+      } catch {
+        setPartners([]);
+      } finally {
+        setLoadingPartners(false);
+      }
+    };
+    if (showPartners) load();
+  }, [showPartners]);
+
+  // Liste des partenaires chargée depuis l'API
 
   // Ajout d'un logo placeholder pour chaque partenaire
   const getLogoUrl = (companyName: string) => `https://ui-avatars.com/api/?name=${encodeURIComponent(companyName)}&background=002B45&color=fff&size=128&rounded=true`;
@@ -226,14 +169,32 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
     }
   };
 
-  const handleMultiStepSubmit = (e: React.FormEvent) => {
+  
+
+  const handleMultiStepSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (step < 3) setStep(step + 1);
-    else {
+    setSubmitError('');
+    if (step < 3) {
+      setStep(step + 1);
+      return;
+    }
+    try {
+      const form = new FormData();
+      form.append('raison_sociale', partnerData.companyName);
+      form.append('wilaya', partnerData.wilaya);
+      form.append('numero_registre_commerce', partnerData.rcNumber);
+      form.append('annees_experience', partnerData.experience);
+      form.append('specialites', JSON.stringify(partnerData.specialties));
+      if (partnerData.registre) form.append('registre', partnerData.registre);
+      if (partnerData.attestation) form.append('attestation', partnerData.attestation);
+      if (partnerData.references) form.append('references', partnerData.references);
+      await api.createCompany(form as unknown as any);
       alert('Demande de partenariat envoyée !');
       setStep(1);
       setPartnerData({companyName: '', rcNumber: '', wilaya: '', experience: '', specialties: [], charter: false, registre: null, attestation: null, references: null});
       setFilePreviews({});
+    } catch (err) {
+      setSubmitError((err as Error).message || 'Erreur lors de la soumission');
     }
   };
 
@@ -297,6 +258,7 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
         </Card>
 
         {/* Partners Grid */}
+        {loadingPartners && <div className="text-center text-slate-600 mt-6">Chargement des partenaires…</div>}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
           {filteredPartners.map((partner) => (
             <Card
@@ -319,6 +281,9 @@ export const SubcontractingPage: React.FC<SubcontractingPageProps> = ({ onNaviga
             </Card>
           ))}
         </div>
+        {!loadingPartners && filteredPartners.length === 0 && (
+          <div className="text-center text-slate-600 mt-6">Aucun partenaire trouvé.</div>
+        )}
        </div>
        </div>
     );

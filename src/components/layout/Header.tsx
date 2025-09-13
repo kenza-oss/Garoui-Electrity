@@ -1,5 +1,8 @@
 import React from 'react';
-import { Menu, X, Zap, User } from 'lucide-react';
+import Menu from 'lucide-react/dist/esm/icons/menu';
+import X from 'lucide-react/dist/esm/icons/x';
+import Zap from 'lucide-react/dist/esm/icons/zap';
+import User from 'lucide-react/dist/esm/icons/user';
 import { Button } from '../common/Button';
 
 interface HeaderProps {

@@ -1,5 +1,9 @@
 import React from 'react';
-import { Zap, Mail, Phone, MapPin, Linkedin } from 'lucide-react';
+import Zap from 'lucide-react/dist/esm/icons/zap';
+import Mail from 'lucide-react/dist/esm/icons/mail';
+import Phone from 'lucide-react/dist/esm/icons/phone';
+import MapPin from 'lucide-react/dist/esm/icons/map-pin';
+import Linkedin from 'lucide-react/dist/esm/icons/linkedin';
 
 interface FooterProps {
   onNavigate?: (section: string) => void;

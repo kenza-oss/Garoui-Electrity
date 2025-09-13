@@ -1,10 +1,17 @@
-import React, { useState } from 'react';
-import { Search, Filter, Grid, List, Eye, ShoppingCart, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import Search from 'lucide-react/dist/esm/icons/search';
+import Filter from 'lucide-react/dist/esm/icons/filter';
+import Grid from 'lucide-react/dist/esm/icons/grid';
+import List from 'lucide-react/dist/esm/icons/list';
+import Eye from 'lucide-react/dist/esm/icons/eye';
+import ShoppingCart from 'lucide-react/dist/esm/icons/shopping-cart';
+import X from 'lucide-react/dist/esm/icons/x';
 import { Button } from '../common/Button';
 import { Input } from '../common/Input';
 import { Select } from '../common/Select';
 import { Card } from '../common/Card';
 import { Product } from '../../types';
+import { api } from '../../lib/api';
 import { motion } from 'framer-motion';
 
 interface MaterialPageProps {
@@ -20,6 +27,19 @@ export const MaterialPage: React.FC<MaterialPageProps> = ({ onNavigate }) => {
   const [priceRange, setPriceRange] = useState('');
 
   // Mock products data
+  const [products, setProducts] = useState<Product[]>([]);
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const list = await api.listProducts();
+        setProducts(Array.isArray(list) ? list : (list?.items || []));
+      } catch {
+        setProducts([]);
+      }
+    };
+    load();
+  }, []);
+  /* Mock removed: products now loaded from API
   const products: Product[] = [
     {
       id: '1',
@@ -133,24 +153,16 @@ export const MaterialPage: React.FC<MaterialPageProps> = ({ onNavigate }) => {
         'Classe': '1'
       }
     },
-  ];
+  ];*/
 
   const categoryOptions = [
     { value: '', label: 'Toutes les catégories' },
-    { value: 'Câbles BT/MT', label: 'Câbles BT/MT' },
-    { value: 'Disjoncteurs & Différentiels', label: 'Disjoncteurs & Différentiels' },
-    { value: 'Transformateurs', label: 'Transformateurs' },
-    { value: 'Armoires & Tableaux', label: 'Armoires & Tableaux' },
-    { value: 'Lampes LED / Projecteurs', label: 'Lampes LED / Projecteurs' },
-    { value: 'Accessoires', label: 'Accessoires' },
-    { value: 'Compteurs & Modules', label: 'Compteurs & Modules' },
+    ...Array.from(new Set(products.map(p => p.category).filter(Boolean))).map((c:any) => ({ value: String(c), label: String(c) }))
   ];
 
   const voltageOptions = [
     { value: '', label: 'Toutes les tensions' },
-    { value: '230V', label: '230V' },
-    { value: '400V', label: '400V' },
-    { value: '750V', label: '750V' },
+    ...Array.from(new Set(products.map(p => p.voltage).filter(Boolean))).map((v:any) => ({ value: String(v), label: String(v) }))
   ];
 
   const priceRangeOptions = [

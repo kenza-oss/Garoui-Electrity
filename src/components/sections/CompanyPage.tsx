@@ -1,25 +1,24 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '../common/Button';
 import { Card } from '../common/Card';
 import { Input } from '../common/Input';
 import { Select } from '../common/Select';
-import { 
-  Building2, 
-  Briefcase, 
-  Users, 
-  Plus, 
-  Eye, 
-  Mail, 
-  Phone, 
-  MapPin,
-  Calendar,
-  FileText,
-  Download,
-  CheckCircle,
-  XCircle,
-  Clock
-} from 'lucide-react';
+import Building2 from 'lucide-react/dist/esm/icons/building-2';
+import Briefcase from 'lucide-react/dist/esm/icons/briefcase';
+import Users from 'lucide-react/dist/esm/icons/users';
+import Plus from 'lucide-react/dist/esm/icons/plus';
+import Eye from 'lucide-react/dist/esm/icons/eye';
+import Mail from 'lucide-react/dist/esm/icons/mail';
+import Phone from 'lucide-react/dist/esm/icons/phone';
+import MapPin from 'lucide-react/dist/esm/icons/map-pin';
+import Calendar from 'lucide-react/dist/esm/icons/calendar';
+import FileText from 'lucide-react/dist/esm/icons/file-text';
+import Download from 'lucide-react/dist/esm/icons/download';
+import CheckCircle from 'lucide-react/dist/esm/icons/check-circle';
+import XCircle from 'lucide-react/dist/esm/icons/x-circle';
+import Clock from 'lucide-react/dist/esm/icons/clock';
 import { Company, CompanyJobOffer, CompanyJobApplication, ElectricianCV } from '../../types';
+import { api } from '../../lib/api';
 import { CompanyApplicationsSection } from './CompanyApplicationsSection';
 import { useCompanyVerification } from '../../hooks/useCompanyVerification';
 
@@ -56,51 +55,43 @@ export const CompanyPage: React.FC<CompanyPageProps> = ({ onNavigate }) => {
     salaryMax: ''
   });
 
-  const [jobOffers, setJobOffers] = useState<CompanyJobOffer[]>([
-    {
-      id: '1',
-      companyId: '1',
-      companyName: 'Entreprise Électrique Plus',
-      title: 'Électricien Industriel',
-      description: 'Nous recherchons un électricien expérimenté pour nos projets industriels',
-      requirements: ['Bac+2 en électricité', '5 ans d\'expérience', 'Permis de conduire'],
-      contractType: 'cdi',
-      experienceRequired: 5,
-      wilaya: 'Alger',
-      salary: { min: 80000, max: 120000, currency: 'DZD' },
-      isActive: true,
-      createdAt: '2024-01-20',
-      applications: []
-    }
-  ]);
+  const [jobOffers, setJobOffers] = useState<CompanyJobOffer[]>([]);
 
-  const [applications, setApplications] = useState<CompanyJobApplication[]>([
-    {
-      id: '1',
-      jobOfferId: '1',
-      electricianId: '1',
-      electricianName: 'Mohammed Boudiaf',
-      electricianEmail: 'mohammed@email.com',
-      electricianPhone: '+213 987 654 321',
-      cvUrl: '/cv-mohammed.pdf',
-      status: 'nouveau',
-      appliedAt: '2024-01-25'
-    }
-  ]);
+  const [applications, setApplications] = useState<CompanyJobApplication[]>([]);
 
-  const [electricianCVs, setElectricianCVs] = useState<ElectricianCV[]>([
-    {
-      id: '1',
-      electricianId: '1',
-      electricianName: 'Karim Zidane',
-      email: 'karim@email.com',
-      phone: '+213 555 123 456',
-      experience: 8,
-      skills: ['Installation électrique', 'Maintenance', 'Schémas électriques'],
-      cvUrl: '/cv-karim.pdf',
-      appliedAt: '2024-01-20'
-    }
-  ]);
+  const [electricianCVs, setElectricianCVs] = useState<ElectricianCV[]>([]);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const list = await api.listOffers();
+        const offers = Array.isArray(list) ? list : (list?.items || []);
+        setJobOffers(offers as CompanyJobOffer[]);
+        // Optionally load subscribers/applications per offer
+        const allApps: CompanyJobApplication[] = [] as any;
+        for (const offer of offers as any[]) {
+          try {
+            const subs = await api.listOfferSubscribers(String(offer.id));
+            const items = Array.isArray(subs) ? subs : (subs?.items || []);
+            for (const s of items) {
+              allApps.push({
+                id: String(s.id || `${offer.id}-${s.userId||s.candidateId}`),
+                jobOfferId: String(offer.id),
+                electricianId: String(s.userId || s.candidateId || ''),
+                electricianName: s.name || s.fullName || s.email || 'Candidat',
+                electricianEmail: s.email || '',
+                electricianPhone: s.phone || '',
+                status: (s.status || 'nouveau'),
+                appliedAt: s.appliedAt || new Date().toISOString(),
+              } as CompanyJobApplication);
+            }
+          } catch {}
+        }
+        setApplications(allApps);
+      } catch {}
+    };
+    if (isPartner) load();
+  }, [isPartner]);
 
   const handleCreateJobOffer = () => {
     setShowJobForm(true);
@@ -326,6 +317,31 @@ export const CompanyPage: React.FC<CompanyPageProps> = ({ onNavigate }) => {
     </div>
   );
 
+  const handleSubmitNewOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const payload: any = {
+        title: jobFormData.title,
+        description: jobFormData.description,
+        contractType: jobFormData.contractType,
+        experienceRequired: parseInt(jobFormData.experienceRequired || '0'),
+        wilaya: jobFormData.wilaya,
+        salary: jobFormData.salaryMin || jobFormData.salaryMax ? {
+          min: parseInt(jobFormData.salaryMin || '0'),
+          max: parseInt(jobFormData.salaryMax || '0'),
+          currency: 'DZD',
+        } : undefined,
+        isActive: true,
+      };
+      const created = await api.createOffer(payload);
+      setJobOffers(prev => [created as any, ...prev]);
+      setShowJobForm(false);
+      setJobFormData({ title: '', description: '', contractType: '', experienceRequired: '', wilaya: '', salaryMin: '', salaryMax: '' });
+    } catch (err) {
+      alert((err as Error).message || "Erreur lors de la création de l'offre");
+    }
+  };
+
   const renderJobForm = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -340,7 +356,7 @@ export const CompanyPage: React.FC<CompanyPageProps> = ({ onNavigate }) => {
             </button>
           </div>
 
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmitNewOffer}>
             <Input
               label="Titre du poste"
               placeholder="Ex: Électricien Industriel"
@@ -415,7 +431,7 @@ export const CompanyPage: React.FC<CompanyPageProps> = ({ onNavigate }) => {
               >
                 Annuler
               </Button>
-              <Button>
+              <Button type="submit">
                 Publier l'offre
               </Button>
             </div>
