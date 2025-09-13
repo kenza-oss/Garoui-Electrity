@@ -34,7 +34,8 @@ export const CompanyPage: React.FC<CompanyPageProps> = ({ onNavigate }) => {
     isLoading, 
     checkCompanyByName, 
     checkCompanyByPassword, 
-    setCurrentCompanyAsPartner 
+    setCurrentCompanyAsPartner,
+    clearCurrentCompany,
   } = useCompanyVerification();
   
   const [activeTab, setActiveTab] = useState<'partner-request' | 'my-offers' | 'my-applications'>('partner-request');
@@ -105,7 +106,7 @@ export const CompanyPage: React.FC<CompanyPageProps> = ({ onNavigate }) => {
     setShowJobForm(true);
   };
 
-  const handleSearchCompany = () => {
+  const handleSearchCompany = async () => {
     setSearchError('');
     setSearchResult(null);
     
@@ -114,14 +115,12 @@ export const CompanyPage: React.FC<CompanyPageProps> = ({ onNavigate }) => {
       return;
     }
     
-    let foundCompany = null;
-    
+    let foundCompany = null as any;
     if (searchCompanyName) {
-      foundCompany = checkCompanyByName(searchCompanyName);
+      foundCompany = await checkCompanyByName(searchCompanyName);
     }
-    
     if (!foundCompany && searchCompanyPassword) {
-      foundCompany = checkCompanyByPassword(searchCompanyPassword);
+      foundCompany = await checkCompanyByPassword(searchCompanyPassword);
     }
     
     if (foundCompany) {
@@ -190,8 +189,7 @@ export const CompanyPage: React.FC<CompanyPageProps> = ({ onNavigate }) => {
             variant="outline"
             size="sm"
             onClick={() => {
-              localStorage.removeItem('garoui-current-company-id');
-              window.location.reload();
+              clearCurrentCompany();
             }}
             className="!bg-white !text-gray-900 hover:!bg-gray-100 !border-white !font-medium"
           >

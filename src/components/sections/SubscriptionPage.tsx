@@ -5,6 +5,7 @@ import { Input } from '../common/Input';
 import { Select } from '../common/Select';
 import { Card } from '../common/Card';
 import { User, SubscriptionPlan, PaymentMethod } from '../../types';
+import { api } from '../../lib/api';
 
 interface SubscriptionPageProps {
   onNavigate: (section: string) => void;
@@ -116,98 +117,80 @@ export const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ onNavigate }
   ];
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est connecté
-    const savedUser = localStorage.getItem('garoui-user');
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
-      setCurrentUser(user);
-      setIsAuthenticated(true);
-    } else {
-      // Créer un utilisateur de test par défaut
-      const testUser: User = {
-        id: 'test-user',
-        firstName: 'Test',
-        lastName: 'User',
-        email: 'test@garoui.com',
-        phone: '06 12 34 56 78',
-        profession: 'Électricien',
-        experience: 5,
-        subscriptionStatus: 'free',
-        createdAt: new Date().toISOString(),
-      };
-      setCurrentUser(testUser);
-      setIsAuthenticated(true);
-      localStorage.setItem('garoui-user', JSON.stringify(testUser));
-    }
+    const bootstrap = async () => {
+      const token = localStorage.getItem('garoui_token');
+      if (!token) {
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        return;
+      }
+      try {
+        const profile = await api.getProfile();
+        setCurrentUser(profile as unknown as User);
+        setIsAuthenticated(true);
+      } catch {
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+      }
+    };
+    bootstrap();
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    // Simulation de connexion
-    const savedUsers = localStorage.getItem('garoui-users');
-    const users = savedUsers ? JSON.parse(savedUsers) : [];
-    
-    const user = users.find((u: User) => u.email === loginData.email);
-    
-    if (user) {
-      setCurrentUser(user);
+    try {
+      await api.login({ email: loginData.email, password: loginData.password });
+      const profile = await api.getProfile();
+      setCurrentUser(profile as unknown as User);
       setIsAuthenticated(true);
       setShowLogin(false);
       setLoginData({ email: '', password: '' });
-      localStorage.setItem('garoui-user', JSON.stringify(user));
-    } else {
-      setError('Email ou mot de passe incorrect');
+    } catch (err) {
+      setError((err as Error).message || 'Erreur de connexion');
     }
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
     if (registerData.password !== registerData.confirmPassword) {
       setError('Les mots de passe ne correspondent pas');
       return;
     }
-
     if (registerData.password.length < 6) {
       setError('Le mot de passe doit contenir au moins 6 caractères');
       return;
     }
-
-    const newUser: User = {
-      id: Date.now().toString(),
-      firstName: registerData.firstName,
-      lastName: registerData.lastName,
-      email: registerData.email,
-      phone: registerData.phone,
-      profession: registerData.profession,
-      experience: parseInt(registerData.experience),
-      subscriptionStatus: 'free',
-      createdAt: new Date().toISOString(),
-    };
-
-    // Sauvegarder l'utilisateur
-    const savedUsers = localStorage.getItem('garoui-users');
-    const users = savedUsers ? JSON.parse(savedUsers) : [];
-    users.push(newUser);
-    localStorage.setItem('garoui-users', JSON.stringify(users));
-    localStorage.setItem('garoui-user', JSON.stringify(newUser));
-
-    setCurrentUser(newUser);
-    setIsAuthenticated(true);
-    setShowRegister(false);
-    setRegisterData({
-      firstName: '', lastName: '', email: '', phone: '', profession: '', experience: '', password: '', confirmPassword: ''
-    });
-    setSuccess('Compte créé avec succès !');
+    try {
+      await api.register({
+        firstName: registerData.firstName,
+        lastName: registerData.lastName,
+        email: registerData.email,
+        phone: registerData.phone,
+        profession: registerData.profession,
+        experience: parseInt(registerData.experience),
+        password: registerData.password,
+      });
+      // Auto-login after register
+      await api.login({ email: registerData.email, password: registerData.password });
+      const profile = await api.getProfile();
+      setCurrentUser(profile as unknown as User);
+      setIsAuthenticated(true);
+      setShowRegister(false);
+      setRegisterData({
+        firstName: '', lastName: '', email: '', phone: '', profession: '', experience: '', password: '', confirmPassword: ''
+      });
+      setSuccess('Compte créé avec succès !');
+    } catch (err) {
+      setError((err as Error).message || 'Erreur lors de l\'inscription');
+    }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await api.logout();
     setCurrentUser(null);
     setIsAuthenticated(false);
-    localStorage.removeItem('garoui-user');
     setStep(1);
   };
 
@@ -221,14 +204,11 @@ export const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ onNavigate }
     setShowPayment(true);
   };
 
-  const handlePayment = (e: React.FormEvent) => {
+  const handlePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
-    // Simulation de paiement
     if (!selectedPlan || !currentUser) return;
 
-    // Vérifier les données de paiement
     if (paymentData.paymentMethod === 'card') {
       if (!paymentData.cardNumber || !paymentData.cardHolder || !paymentData.expiryDate || !paymentData.cvv) {
         setError('Veuillez remplir tous les champs de paiement');
@@ -236,36 +216,21 @@ export const SubscriptionPage: React.FC<SubscriptionPageProps> = ({ onNavigate }
       }
     }
 
-    // Simuler le traitement du paiement
-    setTimeout(() => {
-      const updatedUser = {
-        ...currentUser,
-        subscriptionStatus: 'premium' as const,
-        subscriptionEndDate: new Date(Date.now() + selectedPlan.duration * 30 * 24 * 60 * 60 * 1000).toISOString(),
-      };
-
-      // Mettre à jour l'utilisateur
-      const savedUsers = localStorage.getItem('garoui-users');
-      const users = savedUsers ? JSON.parse(savedUsers) : [];
-      const updatedUsers = users.map((u: User) => 
-        u.id === currentUser.id ? updatedUser : u
-      );
-      
-      localStorage.setItem('garoui-users', JSON.stringify(updatedUsers));
-      localStorage.setItem('garoui-user', JSON.stringify(updatedUser));
-      
-      setCurrentUser(updatedUser);
+    try {
+      const plan = selectedPlan.duration === 1 ? 'mensuel' : 'trimestriel';
+      await api.subscribe({ plan });
+      const sub = await api.getMySubscription();
+      const profile = await api.getProfile();
+      setCurrentUser({ ...(profile as any), subscriptionStatus: sub?.status || 'premium' });
       setShowPayment(false);
-      setPaymentData({
-        cardNumber: '', cardHolder: '', expiryDate: '', cvv: '', paymentMethod: 'card'
-      });
+      setPaymentData({ cardNumber: '', cardHolder: '', expiryDate: '', cvv: '', paymentMethod: 'card' });
       setSuccess('Abonnement activé avec succès !');
-      
-      // Rediriger vers la page de recrutement
       setTimeout(() => {
         onNavigate('recrutement');
-      }, 2000);
-    }, 2000);
+      }, 1200);
+    } catch (err) {
+      setError((err as Error).message || 'Erreur lors du paiement');
+    }
   };
 
   const getSubscriptionStatusColor = (status: string) => {

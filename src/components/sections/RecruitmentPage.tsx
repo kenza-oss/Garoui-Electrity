@@ -7,6 +7,7 @@ import { Card } from '../common/Card';
 import { Candidate, JobOffer, User, CompanyJobOffer } from '../../types';
 import { JobOffersSection } from './JobOffersSection';
 import { CompanyJobOffersSection } from './CompanyJobOffersSection';
+import { api } from '../../lib/api';
 
 interface RecruitmentPageProps {
   onNavigate: (section: string) => void;
@@ -18,6 +19,7 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
   const [showJobOffers, setShowJobOffers] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<'unknown' | 'free' | 'premium' | 'expired'>('unknown');
   const [adminPassword, setAdminPassword] = useState('');
   const [loginError, setLoginError] = useState('');
   const [step, setStep] = useState(1);
@@ -51,45 +53,7 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
   });
 
   // Mock data for job offers
-  const [jobOffers, setJobOffers] = useState<JobOffer[]>(() => {
-    // Récupérer les données du localStorage ou utiliser les données par défaut
-    const savedOffers = localStorage.getItem('garoui-job-offers');
-    if (savedOffers) {
-      return JSON.parse(savedOffers);
-    }
-    return [
-      {
-        id: '1',
-        title: 'Technicien branchement complexe',
-        description: 'Nous recherchons un technicien spécialisé dans les branchements électriques complexes. Missions : installation de compteurs, raccordements haute tension, diagnostics techniques.',
-        contractType: 'cdi',
-        experienceRequired: 3,
-        wilaya: 'Alger',
-        createdAt: '2024-01-15',
-        isActive: true,
-      },
-      {
-        id: '2',
-        title: 'Intervention coupure électricité',
-        description: 'Poste d\'intervention rapide pour les coupures électriques. Gestion des pannes, diagnostic, réparation et rétablissement du service client.',
-        contractType: 'cdd',
-        experienceRequired: 2,
-        wilaya: 'Oran',
-        createdAt: '2024-01-10',
-        isActive: true,
-      },
-      {
-        id: '3',
-        title: 'Technicien rétablissement réseau',
-        description: 'Spécialiste en rétablissement du réseau électrique après incidents. Travaux de maintenance préventive et curative sur les installations.',
-        contractType: 'cdi',
-        experienceRequired: 4,
-        wilaya: 'Constantine',
-        createdAt: '2024-01-05',
-        isActive: true,
-      }
-    ];
-  });
+  const [jobOffers, setJobOffers] = useState<JobOffer[]>([]);
 
   // Mock data for company job offers
   const [companyJobOffers] = useState<CompanyJobOffer[]>([
@@ -233,15 +197,31 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
     }
   };
 
-  const handleMultiStepSubmit = (e: React.FormEvent) => {
+  const handleMultiStepSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (step < 3) setStep(step + 1);
-    else {
-      // Soumission finale
-      alert('Candidature envoyée !');
-      setStep(1);
-      setCandidateData({firstName: '', lastName: '', email: '', phone: '', experience: '', position: '', motivation: '', cv: null, diploma: null, photos: []});
-      setFilePreviews({photos: []});
+    if (step < 3) {
+      setStep(step + 1);
+    } else {
+      try {
+        const form = new FormData();
+        form.append('firstName', candidateData.firstName);
+        form.append('lastName', candidateData.lastName);
+        form.append('email', candidateData.email);
+        form.append('phone', candidateData.phone);
+        form.append('experience', candidateData.experience);
+        form.append('position', candidateData.position);
+        form.append('motivation', candidateData.motivation);
+        if (candidateData.cv) form.append('cv', candidateData.cv);
+        if (candidateData.diploma) form.append('diploma', candidateData.diploma);
+        candidateData.photos.forEach((p, i) => form.append('photos', p, p.name || `photo_${i}.jpg`));
+        await api.submitCandidature(form);
+        alert('Candidature envoyée !');
+        setStep(1);
+        setCandidateData({firstName: '', lastName: '', email: '', phone: '', experience: '', position: '', motivation: '', cv: null, diploma: null, photos: []});
+        setFilePreviews({photos: []});
+      } catch (err) {
+        setUploadError((err as Error).message || 'Erreur lors de l\'envoi de la candidature');
+      }
     }
   };
 
@@ -256,38 +236,44 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
   });
 
   // Fonctions pour la gestion des offres d'emploi
-  const handleJobOfferSubmit = (e: React.FormEvent) => {
+  const handleJobOfferSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newJobOffer: JobOffer = {
-      id: Date.now().toString(),
+    const payload = {
       title: jobOfferData.title,
       description: jobOfferData.description,
-      contractType: jobOfferData.contractType as 'cdi' | 'cdd' | 'stage' | 'apprentissage',
+      contractType: jobOfferData.contractType,
       experienceRequired: parseInt(jobOfferData.experienceRequired),
       wilaya: jobOfferData.wilaya,
-      createdAt: new Date().toISOString().split('T')[0],
       isActive: true,
     };
-    const updatedOffers = [newJobOffer, ...jobOffers];
-    setJobOffers(updatedOffers);
-    localStorage.setItem('garoui-job-offers', JSON.stringify(updatedOffers));
-    setJobOfferData({ title: '', description: '', contractType: '', experienceRequired: '', wilaya: '' });
-    setShowJobOffers(false);
+    try {
+      const created = await api.createOffer(payload);
+      setJobOffers(prev => [created, ...prev]);
+      setJobOfferData({ title: '', description: '', contractType: '', experienceRequired: '', wilaya: '' });
+      setShowJobOffers(false);
+    } catch (err) {
+      alert(`Erreur lors de la création de l'offre: ${(err as Error).message}`);
+    }
   };
 
-  const toggleJobOfferStatus = (id: string) => {
-    const updatedOffers = jobOffers.map(offer => 
-      offer.id === id ? { ...offer, isActive: !offer.isActive } : offer
-    );
-    setJobOffers(updatedOffers);
-    localStorage.setItem('garoui-job-offers', JSON.stringify(updatedOffers));
+  const toggleJobOfferStatus = async (id: string) => {
+    const offer = jobOffers.find(o => o.id === id);
+    if (!offer) return;
+    try {
+      const updated = await api.updateOffer(id, { isActive: !offer.isActive });
+      setJobOffers(prev => prev.map(o => (o.id === id ? { ...o, ...updated } : o)));
+    } catch (err) {
+      alert(`Erreur lors de la mise à jour: ${(err as Error).message}`);
+    }
   };
 
-  const deleteJobOffer = (id: string) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette offre d\'emploi ?')) {
-      const updatedOffers = jobOffers.filter(offer => offer.id !== id);
-      setJobOffers(updatedOffers);
-      localStorage.setItem('garoui-job-offers', JSON.stringify(updatedOffers));
+  const deleteJobOffer = async (id: string) => {
+    if (!window.confirm('Êtes-vous sûr de vouloir supprimer cette offre d\'emploi ?')) return;
+    try {
+      await api.deleteOffer(id);
+      setJobOffers(prev => prev.filter(o => o.id !== id));
+    } catch (err) {
+      alert(`Erreur lors de la suppression: ${(err as Error).message}`);
     }
   };
 
@@ -301,27 +287,44 @@ export const RecruitmentPage: React.FC<RecruitmentPageProps> = ({ onNavigate }) 
     }
   };
 
-  // Vérifier l'authentification et l'abonnement
+  // Auth & Subscription check + load offers
   useEffect(() => {
-    const savedUser = localStorage.getItem('garoui-user');
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
-      setCurrentUser(user);
-      setIsAuthenticated(true);
-    }
+    const bootstrap = async () => {
+      const token = localStorage.getItem('garoui_token');
+      setIsAuthenticated(!!token);
+      try {
+        if (token) {
+          const sub = await api.getMySubscription();
+          // Normalize subscription state
+          const status = (sub?.status || sub?.subscriptionStatus || 'free') as 'free' | 'premium' | 'expired';
+          setSubscriptionStatus(status);
+        } else {
+          setSubscriptionStatus('free');
+        }
+      } catch {
+        setSubscriptionStatus('free');
+      }
+
+      try {
+        const list = await api.listOffers();
+        const normalized = Array.isArray(list) ? list : (list?.items || []);
+        setJobOffers(normalized as JobOffer[]);
+      } catch {
+        // Keep empty or fallback silently
+      }
+    };
+    bootstrap();
   }, []);
 
   const checkSubscriptionAccess = () => {
-    if (!currentUser) {
+    if (!isAuthenticated) {
       setShowSubscriptionRequired(true);
       return false;
     }
-    
-    if (currentUser.subscriptionStatus === 'free') {
+    if (subscriptionStatus !== 'premium') {
       setShowSubscriptionRequired(true);
       return false;
     }
-    
     return true;
   };
 
